@@ -25,9 +25,7 @@ exports.get = (movie) => {
             bool = true;
         }
     }
-    if(bool == false){
-        return "Movie not found";
-    }
+    return bool;
 };
 
 const get = (movie) => {
@@ -37,23 +35,26 @@ const get = (movie) => {
             return movies[i];
         }
     }
+    return false;
 };
 
 exports.delete = (movie) => {
     movie = movie.toLowerCase();
+    let bool = false;
     for(var i = 0; i < movies.length; i++){
         if(movies[i].Title.toLowerCase() == movie){
             movies.splice(i, 1);
-            return movies;
+            bool = true;
         }
     }
+    return bool;
 };
 
-exports.add = (title, genre, price) => {
-    if(get(title)){
-        return "Movie already exists";
+exports.add = (movie) => {
+    if(get(movie)){
+        return false;
     } else {
-        movies.push({Title : title, Genre : genre, Price : price});
-        return title + " added!";
+        movies.push(movie);
+        return true;
     }
 };
