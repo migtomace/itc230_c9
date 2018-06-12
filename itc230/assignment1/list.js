@@ -1,60 +1,46 @@
-const movies = [
-    {Title : "Holloween", Genre : "Horror", Price : "$9.99"},
-    {Title : "Deadpool", Genre : "Comedy", Price : "$13.99"},
-    {Title : "Taken", Genre : "Action", Price : "$13.99"},
-    {Title : "Titanic", Genre : "Drama", Price : "$9.99"},
-    {Title : "Pineapple Express", Genre : "Comedy", Price : "$12.99"}
-];
-
-exports.movies = movies;
+const movies = require("./models/movie.js");
 
 exports.getAll = () => {
-    return movies;
+    return movies.find({}, (err, result) => {
+    if (err) {
+      return err;
+    } 
+    return result;
+  });
 };
 
-exports.get = (movie) => {
-    movie = movie.toLowerCase();
-    let bool = false;
-    for(var i = 0; i < movies.length; i++){
-        if(movies[i].Title.toLowerCase() == movie){
-            return movies[i];
+exports.get = (title) => {
+    console.log(title)
+    return movies.findOne({'title':title},(err,item)=>{
+        if (err) {
+            return {
+            success: false
+        };
         }
-        if(movies[i].Title.toLowerCase() != movie && bool != true){
-            bool = false;
-        } else {
-            bool = true;
-        }
-    }
-    return bool;
+        return item;
+    });
 };
 
-const get = (movie) => {
-    movie = movie.toLowerCase();
-    for(var i = 0; i < movies.length; i++){
-        if(movies[i].Title.toLowerCase() == movie){
-            return movies[i];
-        }
-    }
-    return false;
-};
 
-exports.delete = (movie) => {
-    movie = movie.toLowerCase();
-    let bool = false;
-    for(var i = 0; i < movies.length; i++){
-        if(movies[i].Title.toLowerCase() == movie){
-            movies.splice(i, 1);
-            bool = true;
+exports.delete = (title) => {
+    return movies.findOneAndRemove({'title':title},(err,item)=>{
+        if(err) {
+            return {
+                success: false
+            };
         }
-    }
-    return bool;
+        return item;
+    });
 };
 
 exports.add = (movie) => {
-    if(get(movie)){
-        return false;
-    } else {
-        movies.push(movie);
-        return true;
-    }
+    return movies.update({'title':movie.title}, movie , {upsert:true}, (err,item)=>{
+        if(err) {
+            return {
+                success: false
+            };
+        }
+        console.log(item);
+        return item;
+    });
 };
