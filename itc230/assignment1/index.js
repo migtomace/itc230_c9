@@ -3,6 +3,7 @@ const app = require('express')();
 const handlebars = require('express-handlebars');
 const bodyParser = require('body-parser');
 
+app.use('/api', require('cors')()); // set Access-Control-Allow-Origin header for api route
 
 list.add({title : "random", genre : "this", price : "9.99"});
 
@@ -75,7 +76,7 @@ app.get("/detail", (req, res, next) =>{
         title = title.replace('%20', ' ');
     }
     list.get(title).then((movie)=>{
-        if(movie){
+    if(movie){
         res.send("Searching for: " + title + "<br><br>" 
         + movie.title +" , "+ movie.genre +" , "+ movie.price + 
         "<br><br><a href='delete?title="+title+
@@ -91,12 +92,53 @@ app.get("/detail", (req, res, next) =>{
 app.post("/detail", (req, res) =>{
     let title = req.body.title;
     if(list.get(title)){
-        console.log(list.get(title));
-        // res.send("Searching for: " + title + "<br><br>" + JSON.stringify(list.get(title)) + "<br><br><a href='delete?title="+title+"'>Delete " + title.toLowerCase() + "</a>" + "<br><br><a href='/'>HOME</a>"); 
+        // console.log(list.get(title));
+        res.send("Searching for: " + title + "<br><br>" + JSON.stringify(list.get(title)) + "<br><br><a href='delete?title="+title+"'>Delete " + title + "</a>" + "<br><br><a href='/'>HOME</a>"); 
     } else {
         res.send("Searching for: " + title + "<br><br>" + "<br><br>NOT FOUND" + "<br><br><a href='/'>HOME</a>");
     }
     
+});
+
+app.get('/api/movie/:title', (req, res, next) => {
+    let title = req.params.title;
+    // let movie = list.get(title);
+    // console.log(movie);
+    list.get(title).then((movie) => {
+        if (movie) {
+            console.log(movie);
+    // res.json sets appropriate status code and response header
+    res.send(title);
+  } else {
+    return res.status(500).send('Error occurred: database error.');
+  }
+    }).catch((err)=>{
+        return next(err);
+    });
+  
+});
+
+
+app.get('/api/movie/delete/:title', (req,res) => {
+    let title = req.params.title;
+    let deleted = list.delete(title);
+    if (deleted) {
+    // res.json sets appropriate status code and response header
+    res.json(title + " deleted");
+  } else {
+    return res.status(500).send('Error occurred: database error.');
+  }
+});
+
+app.get('/api/movie/:title', (req,res) => {
+    let title = req.params.title;
+    let added = list.add(title);
+    if (added) {
+    // res.json sets appropriate status code and response header
+    res.json(title + " added");
+  } else {
+    return res.status(500).send('Error occurred: database error.');
+  }
 });
 
 

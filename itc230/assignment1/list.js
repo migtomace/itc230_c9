@@ -10,8 +10,7 @@ exports.getAll = () => {
 };
 
 exports.get = (title) => {
-    console.log(title)
-    return movies.findOne({'title':title},(err,item)=>{
+    return movies.find({ 'title': title },(err,item)=>{
         if (err) {
             return {
             success: false
@@ -40,7 +39,6 @@ exports.add = (movie) => {
                 success: false
             };
         }
-        console.log(item);
         return item;
     });
 };
