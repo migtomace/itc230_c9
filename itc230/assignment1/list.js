@@ -1,5 +1,6 @@
 const movies = require("./models/movie.js");
 
+
 exports.getAll = () => {
     return movies.find({}, (err, result) => {
     if (err) {
@@ -10,7 +11,7 @@ exports.getAll = () => {
 };
 
 exports.get = (title) => {
-    return movies.find({ 'title': title },(err,item)=>{
+    return movies.findOne({ 'title': title },(err,item)=>{
         if (err) {
             return {
             success: false

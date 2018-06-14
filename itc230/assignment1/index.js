@@ -36,31 +36,6 @@ app.get("/getAll", (req, res) =>{
     res.send(list.getAll());
 });
 
-app.get("/get", (req, res) =>{
-    let query = req.url.split('?');
-    let path = query[1].split('=');
-    let title = path[1];
-    if (list.get(title) == true){
-        res.send('Searched for: ' + JSON.stringify(list.movieModel.find(title)));
-    }
-    
-});
-
-app.get("/delete", (req, res) =>{
-    let query = req.url.split('?');
-    let path = query[1].split('=');
-    let title = path[1];
-    if(title.includes('%20')){
-        title = title.replace('%20', ' ');
-    }
-    let deleted = list.delete(title);
-    if(deleted){
-        res.send('Movie: ' + title + ' removed ' + "<br><br><a href='/'>HOME</a>");
-    } else {
-        res.send('Movie: ' + title + ' not found ' + "<br><br><a href='/'>HOME</a>");
-    }
-});
-
 app.post("/add", (req, res) =>{
     let movie = {title :  req.body.title, genre : req.body.genre, price : req.body.price};
     let added = list.add(movie);
@@ -68,54 +43,49 @@ app.post("/add", (req, res) =>{
     
 });
 
-app.get("/detail", (req, res, next) =>{
-    let query = req.url.split('?');
-    let path = query[1].split('=');
-    let title = path[1];
-    if(title.includes('%20')){
-        title = title.replace('%20', ' ');
-    }
+
+app.post("/detail", (req, res, next) =>{
+    let title = req.body.title;
     list.get(title).then((movie)=>{
-    if(movie){
-        res.send("Searching for: " + title + "<br><br>" 
-        + movie.title +" , "+ movie.genre +" , "+ movie.price + 
-        "<br><br><a href='delete?title="+title+
-        "'>Delete " + title.toUpperCase() + "</a>" + "<br><br><a href='/'>HOME</a>"); 
+        if(list.get(title)){
+        // console.log(list.get(title));
+        res.send("Searching for: " + movie.title + "<br><br>" + movie.title + " , " + movie.genre + " , " + movie.price + "<br><br><a href='delete?title="+title+"'>Delete " + title + "</a>" + "<br><br><a href='/'>HOME</a>"); 
     } else {
-        res.send("Searching for: " + title + "<br><br>" + "<br><br>NOT FOUND" + "<br><br><a href='/'>HOME</a>");
+        res.send("Searching for: " +movie.title + "<br><br>" + "<br><br>NOT FOUND" + "<br><br><a href='/'>HOME</a>");
     }
     }).catch((err)=>{
         return next(err);
-    });
-});
-
-app.post("/detail", (req, res) =>{
-    let title = req.body.title;
-    if(list.get(title)){
-        // console.log(list.get(title));
-        res.send("Searching for: " + title + "<br><br>" + JSON.stringify(list.get(title)) + "<br><br><a href='delete?title="+title+"'>Delete " + title + "</a>" + "<br><br><a href='/'>HOME</a>"); 
-    } else {
-        res.send("Searching for: " + title + "<br><br>" + "<br><br>NOT FOUND" + "<br><br><a href='/'>HOME</a>");
-    }
+    })
+    
     
 });
 
 app.get('/api/movie/:title', (req, res, next) => {
     let title = req.params.title;
-    // let movie = list.get(title);
-    // console.log(movie);
-    list.get(title).then((movie) => {
-        if (movie) {
-            console.log(movie);
-    // res.json sets appropriate status code and response header
-    res.send(title);
-  } else {
-    return res.status(500).send('Error occurred: database error.');
-  }
+    list.get(title).then((movie)=>{
+        if(movie){
+        // console.log(list.get(title));
+        res.send("Searching for: " + title + "<br><br>" + movie.title + " , " + movie.genre + " , " + movie.price + "<br><br><a href='/api/movie/delete/"+title+"'>Delete " + title + "</a>" + "<br><br><a href='/'>HOME</a>"); 
+    } else {
+        res.send("Searching for: " + title + "<br><br>" + "<br><br>NOT FOUND" + "<br><br><a href='/'>HOME</a>");
+    }
     }).catch((err)=>{
         return next(err);
     });
-  
+});
+
+app.get('/api/movies', (req, res, next) => {
+    list.getAll().then((movies)=>{
+        console.log(movies);
+        let string = "";
+        for(let movie in movies){
+            string += movies[movie].title + ", " + movies[movie].genre + ", " + movies[movie].price + "<br>";
+        }
+        res.send(string);
+    }).catch((err)=>{
+        return next(err);
+    });
+    
 });
 
 
@@ -130,12 +100,12 @@ app.get('/api/movie/delete/:title', (req,res) => {
   }
 });
 
-app.get('/api/movie/:title', (req,res) => {
-    let title = req.params.title;
-    let added = list.add(title);
+app.get('/api/movie/:title/:genre/:price', (req,res) => {
+    let movie = {title : req.params.title, genre : req.params.genre, price : req.params.price};
+    let added = list.add(movie);
     if (added) {
     // res.json sets appropriate status code and response header
-    res.json(title + " added");
+    res.json(req.params.title + " added");
   } else {
     return res.status(500).send('Error occurred: database error.');
   }
